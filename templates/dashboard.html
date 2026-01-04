@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CPE Tracker{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Welcome, {{ current_user.username }}!</h1>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total CPE Hours</h5>
+                <h2 class="mb-0">{{ "%.1f"|format(total_hours) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Quick Actions</h5>
+                <a href="{{ url_for('add_record') }}" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-circle"></i> Add Training
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Export Data</h5>
+                <a href="{{ url_for('export') }}" class="btn btn-light btn-sm">
+                    <i class="bi bi-download"></i> Export Records
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if category_hours %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Hours by Category</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for category, hours in category_hours %}
+            <div class="col-md-4 mb-3">
+                <div class="card border-secondary">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">{{ category }}</h6>
+                        <h4 class="card-title">{{ "%.1f"|format(hours) }} hours</h4>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Recent Training Records</h5>
+    </div>
+    <div class="card-body">
+        {% if recent_records %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Training Name</th>
+                        <th>Category</th>
+                        <th>Hours</th>
+                        <th>Date Added</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in recent_records %}
+                    <tr>
+                        <td>{{ record.training_name }}</td>
+                        <td><span class="badge bg-secondary">{{ record.category }}</span></td>
+                        <td>{{ record.hours }}</td>
+                        <td>{{ record.date_added.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if record.link %}
+                            <a href="{{ record.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-link-45deg"></i>
+                            </a>
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('records') }}" class="btn btn-primary">View All Records</a>
+        {% else %}
+        <p class="text-muted">No training records yet. <a href="{{ url_for('add_record') }}">Add your first record</a>.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

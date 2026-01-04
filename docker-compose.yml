@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  cpe-tracker:
+    build: .
+    container_name: cpe-tracker
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/instance
+    environment:
+      - SECRET_KEY=your-secret-key-change-this-in-production
+      - SQLALCHEMY_DATABASE_URI=sqlite:////app/instance/cpe_tracker.db
+    restart: unless-stopped

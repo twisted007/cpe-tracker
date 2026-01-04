@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Export Records - CPE Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="bi bi-download"></i> Export Training Records</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Export your CPE training records to a CSV file. You can specify a date range or export all records.
+                </p>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date">
+                        <div class="form-text">Leave blank to include all records from the beginning</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date">
+                        <div class="form-text">Leave blank to include all records up to today</div>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>CSV Format:</strong> The exported file will include columns for Training Name, Hours, Link, and Date Added.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info text-white">
+                            <i class="bi bi-download"></i> Download CSV
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Quick Export Options</h5>
+                <div class="d-grid gap-2">
+                    <form method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-calendar"></i> Export All Records
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set default dates (optional - current year)
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const endDateInput = document.getElementById('end_date');
+        
+        // Set end date to today as default
+        if (!endDateInput.value) {
+            endDateInput.value = today.toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}
