@@ -32,6 +32,12 @@
                     </div>
                     
                     <div class="mb-3">
+                        <label for="date_completed" class="form-label">Date Completed</label>
+                        <input type="date" class="form-control" id="date_completed" name="date_completed" value="{{ record.date_added.strftime('%Y-%m-%d') }}">
+                        <div class="form-text">Update the date when this training was actually completed</div>
+                    </div>
+                    
+                    <div class="mb-3">
                         <label for="link" class="form-label">Link</label>
                         <input type="url" class="form-control" id="link" name="link" value="{{ record.link or '' }}" placeholder="https://example.com/training">
                     </div>

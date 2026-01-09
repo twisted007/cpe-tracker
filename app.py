@@ -114,6 +114,7 @@ def add_record():
         category = request.form.get('category')
         hours = request.form.get('hours')
         link = request.form.get('link')
+        date_completed = request.form.get('date_completed')
         
         try:
             hours = float(hours)
@@ -121,12 +122,23 @@ def add_record():
             flash('Invalid hours value', 'danger')
             return redirect(url_for('add_record'))
         
+        # Parse the date if provided, otherwise use current datetime
+        if date_completed:
+            try:
+                completed_datetime = datetime.strptime(date_completed, '%Y-%m-%d')
+            except ValueError:
+                flash('Invalid date format', 'danger')
+                return redirect(url_for('add_record'))
+        else:
+            completed_datetime = datetime.utcnow()
+        
         record = CPERecord(
             user_id=current_user.id,
             training_name=training_name,
             category=category,
             hours=hours,
-            link=link
+            link=link,
+            date_added=completed_datetime
         )
         db.session.add(record)
         db.session.commit()
@@ -161,12 +173,21 @@ def edit_record(record_id):
         record.training_name = request.form.get('training_name')
         record.category = request.form.get('category')
         record.link = request.form.get('link')
+        date_completed = request.form.get('date_completed')
         
         try:
             record.hours = float(request.form.get('hours'))
         except ValueError:
             flash('Invalid hours value', 'danger')
             return redirect(url_for('edit_record', record_id=record_id))
+        
+        # Update the date_added if a new date is provided
+        if date_completed:
+            try:
+                record.date_added = datetime.strptime(date_completed, '%Y-%m-%d')
+            except ValueError:
+                flash('Invalid date format', 'danger')
+                return redirect(url_for('edit_record', record_id=record_id))
         
         record.date_modified = datetime.utcnow()
         db.session.commit()
