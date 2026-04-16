@@ -10,6 +10,89 @@
     </a>
 </div>
 
+<!-- Filter and Sort Controls -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter & Sort</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('records') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if cat == current_category %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ current_start_date }}">
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ current_end_date }}">
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="sort_by" class="form-label">Sort By</label>
+                    <select class="form-select" id="sort_by" name="sort_by">
+                        <option value="date_desc" {% if current_sort == 'date_desc' %}selected{% endif %}>Date (Newest First)</option>
+                        <option value="date_asc" {% if current_sort == 'date_asc' %}selected{% endif %}>Date (Oldest First)</option>
+                        <option value="name_asc" {% if current_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="name_desc" {% if current_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                        <option value="hours_desc" {% if current_sort == 'hours_desc' %}selected{% endif %}>Hours (High to Low)</option>
+                        <option value="hours_asc" {% if current_sort == 'hours_asc' %}selected{% endif %}>Hours (Low to High)</option>
+                        <option value="category_asc" {% if current_sort == 'category_asc' %}selected{% endif %}>Category (A-Z)</option>
+                        <option value="category_desc" {% if current_sort == 'category_desc' %}selected{% endif %}>Category (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Apply Filters
+                    </button>
+                    <a href="{{ url_for('records') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Clear Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Card -->
+{% if records %}
+<div class="card mb-3 bg-light">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> 
+                    Showing {{ records|length }} record(s)
+                    {% if current_category %}
+                    in category: <span class="badge bg-secondary">{{ current_category }}</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock"></i> 
+                    Total Hours: <strong>{{ "%.1f"|format(total_filtered_hours) }}</strong>
+                </h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Records Table -->
 {% if records %}
 <div class="card shadow">
     <div class="card-body">
@@ -21,7 +104,7 @@
                         <th>Category</th>
                         <th>Hours</th>
                         <th>Link</th>
-                        <th>Date Added</th>
+                        <th>Date Completed</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -40,7 +123,7 @@
                             <span class="text-muted">N/A</span>
                             {% endif %}
                         </td>
-                        <td>{{ record.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ record.date_added.strftime('%Y-%m-%d') }}</td>
                         <td>
                             <a href="{{ url_for('edit_record', record_id=record.id) }}" class="btn btn-sm btn-warning">
                                 <i class="bi bi-pencil"></i> Edit
@@ -56,15 +139,16 @@
                 </tbody>
             </table>
         </div>
-        <div class="mt-3">
-            <strong>Total Records: {{ records|length }}</strong>
-        </div>
     </div>
 </div>
 {% else %}
 <div class="alert alert-info">
-    <i class="bi bi-info-circle"></i> No training records found. 
-    <a href="{{ url_for('add_record') }}" class="alert-link">Add your first record</a>.
+    <i class="bi bi-info-circle"></i> 
+    {% if current_category or current_start_date or current_end_date %}
+    No training records found matching your filters. <a href="{{ url_for('records') }}" class="alert-link">Clear filters</a> to see all records.
+    {% else %}
+    No training records found. <a href="{{ url_for('add_record') }}" class="alert-link">Add your first record</a>.
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

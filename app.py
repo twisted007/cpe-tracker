@@ -157,8 +157,72 @@ def add_record():
 @app.route('/records')
 @login_required
 def records():
-    user_records = CPERecord.query.filter_by(user_id=current_user.id).order_by(CPERecord.date_added.desc()).all()
-    return render_template('records.html', records=user_records)
+    # Get filter parameters
+    category_filter = request.args.get('category', '')
+    start_date = request.args.get('start_date', '')
+    end_date = request.args.get('end_date', '')
+    sort_by = request.args.get('sort_by', 'date_desc')
+    
+    # Base query
+    query = CPERecord.query.filter_by(user_id=current_user.id)
+    
+    # Apply category filter
+    if category_filter:
+        query = query.filter(CPERecord.category == category_filter)
+    
+    # Apply date range filters
+    if start_date:
+        try:
+            start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(CPERecord.date_added >= start_datetime)
+        except ValueError:
+            flash('Invalid start date format', 'warning')
+    
+    if end_date:
+        try:
+            end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+            end_datetime = end_datetime.replace(hour=23, minute=59, second=59)
+            query = query.filter(CPERecord.date_added <= end_datetime)
+        except ValueError:
+            flash('Invalid end date format', 'warning')
+    
+    # Apply sorting
+    if sort_by == 'date_asc':
+        query = query.order_by(CPERecord.date_added.asc())
+    elif sort_by == 'date_desc':
+        query = query.order_by(CPERecord.date_added.desc())
+    elif sort_by == 'name_asc':
+        query = query.order_by(CPERecord.training_name.asc())
+    elif sort_by == 'name_desc':
+        query = query.order_by(CPERecord.training_name.desc())
+    elif sort_by == 'hours_asc':
+        query = query.order_by(CPERecord.hours.asc())
+    elif sort_by == 'hours_desc':
+        query = query.order_by(CPERecord.hours.desc())
+    elif sort_by == 'category_asc':
+        query = query.order_by(CPERecord.category.asc())
+    elif sort_by == 'category_desc':
+        query = query.order_by(CPERecord.category.desc())
+    
+    user_records = query.all()
+    
+    # Calculate total hours for filtered results
+    total_filtered_hours = sum(record.hours for record in user_records)
+    
+    # Get all unique categories for filter dropdown
+    all_categories = db.session.query(CPERecord.category).filter_by(
+        user_id=current_user.id
+    ).distinct().order_by(CPERecord.category).all()
+    categories = [cat[0] for cat in all_categories]
+    
+    return render_template('records.html', 
+                         records=user_records,
+                         categories=categories,
+                         total_filtered_hours=total_filtered_hours,
+                         current_category=category_filter,
+                         current_start_date=start_date,
+                         current_end_date=end_date,
+                         current_sort=sort_by)
 
 @app.route('/edit/<int:record_id>', methods=['GET', 'POST'])
 @login_required
@@ -263,4 +327,4 @@ def export():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
